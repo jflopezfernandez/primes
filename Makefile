@@ -2,6 +2,9 @@
 vpath %.c src
 vpath %.h include
 
+CP       = cp -f -u
+RM       = rm -f
+
 OBJS     = main.o
 
 CC       = gcc
@@ -23,4 +26,11 @@ $(TARGET): $(OBJS)
 clean:
 	$(RM) ./*.{o,asm,lst} $(TARGET)
 
+.PHONY: install
+install: $(TARGET)
+	$(CP) ./$(TARGET) /usr/bin/$(TARGET)
+
+.PHONY: uninstall
+uninstall:
+	$(RM) /usr/bin/$(TARGET)
 

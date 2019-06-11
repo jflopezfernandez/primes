@@ -1,6 +1,13 @@
 
 #include "primes.h"
 
+enum {
+	UNDEFINED            = -1,
+	DEFINITELY_NOT_PRIME =  0,
+	PROBABLY_PRIME       =  1,
+	DEFINITELY_PRIME     =  2
+};
+
 // ./primes -n N --from X
 int main(int argc, char *argv[])
 {
@@ -9,7 +16,10 @@ int main(int argc, char *argv[])
 
 	if (argc == 2) {
 		if ((strcmp(argv[1],"--help") == 0) || (strcmp(argv[1],"-h") == 0)) {
-			fprintf(stdout, "Usage: primes -n <HowMany> --from <LargerThan>\n");
+			fprintf(stdout, "Usage: primes [OPTIONS]\n\n");
+			fprintf(stdout, "Options:\n\n");
+			fprintf(stdout, "  -n INTEGER          Number of primes to generate\n");
+			fprintf(stdout, "  --from INTEGER      Start with prime larger than this value\n\n\n");
 
 			return EXIT_SUCCESS;
 		}
@@ -41,6 +51,10 @@ int main(int argc, char *argv[])
 
 	mpz_t n;
 
+	// Hold on the generation return value
+
+	int is_prime = -1;
+
 	if (mpz_init_set_str(n, N, 10) == -1) {
 		fprintf(stderr, "[Error] Invalid number of primes requested: %s\n", N);
 
@@ -65,12 +79,13 @@ int main(int argc, char *argv[])
 		mpz_nextprime(p, p);
 
 		// Validate prime number. If it's definitely not prime, get another one
-		while (mpz_probab_prime_p(p, 50) == FALSE) {
+		while ((is_prime = mpz_probab_prime_p(p, 500)) == DEFINITELY_NOT_PRIME) {
 			mpz_nextprime(p, p);
 		}
 
-		// Print to stdout
-		gmp_printf("%Zu\n", p); 
+		// Print to stdout, indicating if a prime is definitely or just only
+		// probably prime.
+		gmp_printf("%Zu%s\n", p, (is_prime == PROBABLY_PRIME) ? "*" : ""); 
 
 		// Decrease counter
 		mpz_sub_ui(n, n, 1);
